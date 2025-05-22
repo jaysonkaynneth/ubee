@@ -42,24 +42,26 @@ class PlayerView extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child:
-                        item.thumbnailUrl != null
-                            ? Image.network(
-                              item.thumbnailUrl!,
-                              fit: BoxFit.cover,
-                            )
-                            : Container(
-                              color: CupertinoColors.systemGrey5,
-                              child: const Center(
-                                child: Icon(
-                                  CupertinoIcons.music_note_2,
-                                  size: 50,
-                                  color: CupertinoColors.systemGrey2,
+                  child: Obx(
+                    () => ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child:
+                          controller.currentItem.value?.thumbnailUrl != null
+                              ? Image.network(
+                                controller.currentItem.value!.thumbnailUrl!,
+                                fit: BoxFit.cover,
+                              )
+                              : Container(
+                                color: CupertinoColors.systemGrey5,
+                                child: const Center(
+                                  child: Icon(
+                                    CupertinoIcons.music_note_2,
+                                    size: 50,
+                                    color: CupertinoColors.systemGrey2,
+                                  ),
                                 ),
                               ),
-                            ),
+                    ),
                   ),
                 ),
               ),
@@ -69,36 +71,56 @@ class PlayerView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    Text(
-                      item.name,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    Obx(
+                      () => Text(
+                        controller.currentItem.value?.name ?? '',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                    if (item.videoTitle != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        item.videoTitle!,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: CupertinoColors.systemGrey,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                    if (item.videoAuthor != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        item.videoAuthor!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: CupertinoColors.systemGrey2,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                    Obx(() {
+                      final videoTitle =
+                          controller.currentItem.value?.videoTitle;
+                      if (videoTitle != null) {
+                        return Column(
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(
+                              videoTitle,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: CupertinoColors.systemGrey,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
+                    Obx(() {
+                      final videoAuthor =
+                          controller.currentItem.value?.videoAuthor;
+                      if (videoAuthor != null) {
+                        return Column(
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(
+                              videoAuthor,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: CupertinoColors.systemGrey2,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
                   ],
                 ),
               ),
