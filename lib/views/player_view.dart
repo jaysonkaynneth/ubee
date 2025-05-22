@@ -189,13 +189,20 @@ class PlayerView extends StatelessWidget {
                   children: [
                     CupertinoButton(
                       padding: const EdgeInsets.all(8),
-                      child: const Icon(
-                        CupertinoIcons.backward_fill,
-                        size: 28,
-                        color: CupertinoColors.black,
+                      child: Obx(
+                        () => Icon(
+                          CupertinoIcons.backward_fill,
+                          size: 28,
+                          color:
+                              controller.hasPrevious
+                                  ? CupertinoColors.black
+                                  : CupertinoColors.systemGrey4,
+                        ),
                       ),
                       onPressed: () {
-                        controller.playPrevious();
+                        if (controller.hasPrevious) {
+                          controller.playPrevious();
+                        }
                       },
                     ),
                     CupertinoButton(
@@ -237,13 +244,20 @@ class PlayerView extends StatelessWidget {
                     ),
                     CupertinoButton(
                       padding: const EdgeInsets.all(8),
-                      child: const Icon(
-                        CupertinoIcons.forward_fill,
-                        size: 28,
-                        color: CupertinoColors.black,
+                      child: Obx(
+                        () => Icon(
+                          CupertinoIcons.forward_fill,
+                          size: 28,
+                          color:
+                              controller.hasNext
+                                  ? CupertinoColors.black
+                                  : CupertinoColors.systemGrey4,
+                        ),
                       ),
                       onPressed: () {
-                        controller.playNext();
+                        if (controller.hasNext) {
+                          controller.playNext();
+                        }
                       },
                     ),
                   ],
