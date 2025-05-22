@@ -171,7 +171,8 @@ class FormController extends GetxController {
       try {
         await for (final data in stream) {
           count += data.length;
-          final progress = count / len * 0.5; // First 50% for download
+          final progress =
+              (count / len * 0.5) * 2; // Multiply by 2 to show full range
 
           if (itemIndex < items.length) {
             final currentItem = items[itemIndex];
@@ -194,8 +195,9 @@ class FormController extends GetxController {
         if (itemIndex < items.length) {
           final currentItem = items[itemIndex];
           items[itemIndex] = currentItem.copyWith(
-            downloadProgress: 0.5, // 50% progress after download
+            downloadProgress: 1.0, // Set to 1.0 to indicate conversion phase
             isDownloading: true,
+            isConverting: true, // Add this field to DownloadItem model
           );
         }
 

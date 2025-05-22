@@ -162,7 +162,9 @@ class DownloadItemCard extends StatelessWidget {
                         const CupertinoActivityIndicator(),
                         const SizedBox(height: 8),
                         Text(
-                          'Downloading... ${(item.downloadProgress * 100).toInt()}%',
+                          item.isConverting
+                              ? 'Finishing up...'
+                              : 'Downloading... ${(item.downloadProgress * 100).toInt()}%',
                           style: const TextStyle(
                             fontSize: 14,
                             color: CupertinoColors.systemGrey,
