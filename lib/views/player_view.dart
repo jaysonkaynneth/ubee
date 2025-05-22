@@ -117,16 +117,18 @@ class PlayerView extends StatelessWidget {
                           children: [
                             Text(
                               controller.currentTime.value,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: CupertinoColors.systemGrey2,
                                 fontSize: 12,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             Text(
                               controller.totalTime.value,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: CupertinoColors.systemGrey2,
                                 fontSize: 12,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
@@ -134,64 +136,175 @@ class PlayerView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      height: 30,
-                      child: Obx(
-                        () => CupertinoSlider(
-                          value: controller.progress.value,
-                          onChanged: (value) {
-                            controller.seek(value);
-                          },
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          height: 2,
+                          decoration: BoxDecoration(
+                            color: CupertinoColors.systemGrey5,
+                            borderRadius: BorderRadius.circular(1),
+                          ),
                         ),
-                      ),
+                        Obx(
+                          () => SizedBox(
+                            height: 30,
+                            child: CupertinoSlider(
+                              value: controller.progress.value,
+                              onChangeStart: (value) {
+                                controller.onSliderChangeStart(value);
+                              },
+                              onChanged: (value) {
+                                controller.onSliderChanged(value);
+                              },
+                              onChangeEnd: (value) {
+                                controller.onSliderChangeEnd(value);
+                              },
+                              activeColor: CupertinoColors.activeBlue,
+                              thumbColor: CupertinoColors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 30),
               // Media Controls
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CupertinoButton(
-                    padding: const EdgeInsets.all(20),
-                    child: const Icon(
-                      CupertinoIcons.backward_fill,
-                      size: 35,
-                      color: CupertinoColors.black,
-                    ),
-                    onPressed: () {
-                      // TODO: Implement previous
-                    },
-                  ),
-                  Obx(
-                    () => CupertinoButton(
-                      padding: const EdgeInsets.all(20),
-                      child: Icon(
-                        controller.isPlaying.value
-                            ? CupertinoIcons.pause_fill
-                            : CupertinoIcons.play_fill,
-                        size: 50,
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.05,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    CupertinoButton(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(
+                        CupertinoIcons.backward_fill,
+                        size: 28,
                         color: CupertinoColors.black,
                       ),
                       onPressed: () {
-                        controller.togglePlayPause();
+                        // TODO: Implement previous
                       },
                     ),
-                  ),
-                  CupertinoButton(
-                    padding: const EdgeInsets.all(20),
-                    child: const Icon(
-                      CupertinoIcons.forward_fill,
-                      size: 35,
-                      color: CupertinoColors.black,
+                    CupertinoButton(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(
+                        CupertinoIcons.gobackward_15,
+                        size: 24,
+                        color: CupertinoColors.black,
+                      ),
+                      onPressed: () {
+                        controller.skipBackward();
+                      },
                     ),
-                    onPressed: () {
-                      // TODO: Implement next
-                    },
-                  ),
-                ],
+                    Obx(
+                      () => CupertinoButton(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          controller.isPlaying.value
+                              ? CupertinoIcons.pause_circle_fill
+                              : CupertinoIcons.play_circle_fill,
+                          size: 44,
+                          color: CupertinoColors.activeBlue,
+                        ),
+                        onPressed: () {
+                          controller.togglePlayPause();
+                        },
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(
+                        CupertinoIcons.goforward_15,
+                        size: 24,
+                        color: CupertinoColors.black,
+                      ),
+                      onPressed: () {
+                        controller.skipForward();
+                      },
+                    ),
+                    CupertinoButton(
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(
+                        CupertinoIcons.forward_fill,
+                        size: 28,
+                        color: CupertinoColors.black,
+                      ),
+                      onPressed: () {
+                        // TODO: Implement next
+                      },
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(height: 30),
+              // Captions Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Captions',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: CupertinoColors.systemGrey6,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Obx(
+                        () =>
+                            controller.captions.isEmpty
+                                ? const Center(
+                                  child: Text(
+                                    'No captions available',
+                                    style: TextStyle(
+                                      color: CupertinoColors.systemGrey,
+                                    ),
+                                  ),
+                                )
+                                : ListView.builder(
+                                  padding: const EdgeInsets.all(12),
+                                  itemCount: controller.captions.length,
+                                  itemBuilder: (context, index) {
+                                    final caption = controller.captions[index];
+                                    return Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                      ),
+                                      child: Obx(
+                                        () => Text(
+                                          caption.text,
+                                          style: TextStyle(
+                                            color:
+                                                controller
+                                                            .currentCaption
+                                                            .value ==
+                                                        caption.text
+                                                    ? CupertinoColors.activeBlue
+                                                    : CupertinoColors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
             ],
           ),
         ),
