@@ -193,7 +193,7 @@ class PlayerView extends StatelessWidget {
                     CupertinoButton(
                       padding: const EdgeInsets.all(8),
                       child: const Icon(
-                        CupertinoIcons.gobackward_15,
+                        CupertinoIcons.gobackward,
                         size: 24,
                         color: CupertinoColors.black,
                       ),
@@ -219,7 +219,7 @@ class PlayerView extends StatelessWidget {
                     CupertinoButton(
                       padding: const EdgeInsets.all(8),
                       child: const Icon(
-                        CupertinoIcons.goforward_15,
+                        CupertinoIcons.goforward,
                         size: 24,
                         color: CupertinoColors.black,
                       ),
