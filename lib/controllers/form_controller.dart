@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/download_item.dart';
 import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new/return_code.dart';
@@ -11,6 +12,7 @@ class FormController extends GetxController {
   final RxList<DownloadItem> items = <DownloadItem>[].obs;
   final _yt = YoutubeExplode();
   static const _metadataFileName = 'downloads_metadata.json';
+  static const _queueOrderKey = 'queue_order';
 
   @override
   void onInit() {
@@ -101,8 +103,8 @@ class FormController extends GetxController {
         }
       }
 
-      // Update the items list
-      items.value = allItems;
+      // Load items in the saved order
+      await loadItemsInSavedOrder(allItems);
     } catch (e) {
       print('Error loading existing downloads: $e');
     }
@@ -291,6 +293,59 @@ class FormController extends GetxController {
       print('');
     } catch (e) {
       print('Error deleting item: $e');
+    }
+  }
+
+  // Save the current queue order
+  Future<void> saveQueueOrder() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final itemNames = items.map((item) => item.name).toList();
+      await prefs.setStringList(_queueOrderKey, itemNames);
+    } catch (e) {
+      print('Error saving queue order: $e');
+    }
+  }
+
+  // Reorder items in the list
+  void reorderItems(int oldIndex, int newIndex) {
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = items.removeAt(oldIndex);
+    items.insert(newIndex, item);
+    saveQueueOrder();
+  }
+
+  // Load items in the saved order
+  Future<void> loadItemsInSavedOrder(List<DownloadItem> loadedItems) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedOrder = prefs.getStringList(_queueOrderKey);
+
+      if (savedOrder != null) {
+        // Create a map of names to items for quick lookup
+        final itemMap = {for (var item in loadedItems) item.name: item};
+
+        // First add items in the saved order
+        final orderedItems = <DownloadItem>[];
+        for (var name in savedOrder) {
+          if (itemMap.containsKey(name)) {
+            orderedItems.add(itemMap[name]!);
+            itemMap.remove(name);
+          }
+        }
+
+        // Add any remaining items that weren't in the saved order
+        orderedItems.addAll(itemMap.values);
+
+        items.value = orderedItems;
+      } else {
+        items.value = loadedItems;
+      }
+    } catch (e) {
+      print('Error loading queue order: $e');
+      items.value = loadedItems;
     }
   }
 }

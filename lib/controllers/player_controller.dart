@@ -3,10 +3,12 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../models/download_item.dart';
+import '../controllers/form_controller.dart';
 
 class PlayerController extends GetxController {
   final _player = AudioPlayer();
   final _yt = YoutubeExplode();
+  final formController = Get.find<FormController>();
   final Rx<DownloadItem?> currentItem = Rx<DownloadItem?>(null);
   final RxBool isPlaying = false.obs;
   final RxDouble progress = 0.0.obs;
@@ -16,6 +18,28 @@ class PlayerController extends GetxController {
   final RxString currentCaption = ''.obs;
   final RxBool isDraggingSlider = false.obs;
   bool wasPlayingBeforeDrag = false;
+
+  int get currentIndex {
+    if (currentItem.value == null) return -1;
+    return formController.items.indexWhere(
+      (item) => item.name == currentItem.value!.name,
+    );
+  }
+
+  bool get hasNext => currentIndex < formController.items.length - 1;
+  bool get hasPrevious => currentIndex > 0;
+
+  Future<void> playNext() async {
+    if (!hasNext) return;
+    final nextItem = formController.items[currentIndex + 1];
+    await loadAndPlay(nextItem);
+  }
+
+  Future<void> playPrevious() async {
+    if (!hasPrevious) return;
+    final previousItem = formController.items[currentIndex - 1];
+    await loadAndPlay(previousItem);
+  }
 
   @override
   void onClose() {
@@ -101,6 +125,8 @@ class PlayerController extends GetxController {
               progress.value = 1.0;
               _player.pause();
               isPlaying.value = false;
+              // Auto-play next track when current one ends
+              playNext();
             } else {
               progress.value = newProgress;
             }

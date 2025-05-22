@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show ReorderableListView;
 import 'package:get/get.dart';
 import '../controllers/form_controller.dart';
 import '../widgets/download_item_card.dart';
@@ -22,16 +23,20 @@ class HomeView extends GetView<FormController> {
         child: Obx(
           () =>
               controller.items.isEmpty
-                  ? Center(
+                  ? const Center(
                     child: Text('No items yet', style: TextStyle(fontSize: 24)),
                   )
-                  : ListView.builder(
+                  : ReorderableListView.builder(
                     padding: const EdgeInsets.only(top: 8),
                     itemCount: controller.items.length,
+                    onReorder: controller.reorderItems,
                     itemBuilder: (context, index) {
-                      return DownloadItemCard(
-                        item: controller.items[index],
-                        index: index,
+                      return KeyedSubtree(
+                        key: ValueKey(controller.items[index].name),
+                        child: DownloadItemCard(
+                          item: controller.items[index],
+                          index: index,
+                        ),
                       );
                     },
                   ),

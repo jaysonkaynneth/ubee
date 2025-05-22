@@ -136,36 +136,22 @@ class PlayerView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          height: 2,
-                          decoration: BoxDecoration(
-                            color: CupertinoColors.systemGrey5,
-                            borderRadius: BorderRadius.circular(1),
-                          ),
+                    SizedBox(
+                      height: 30,
+                      child: Obx(
+                        () => CupertinoSlider(
+                          value: controller.progress.value,
+                          onChangeStart: (value) {
+                            controller.onSliderChangeStart(value);
+                          },
+                          onChanged: (value) {
+                            controller.onSliderChanged(value);
+                          },
+                          onChangeEnd: (value) {
+                            controller.onSliderChangeEnd(value);
+                          },
                         ),
-                        Obx(
-                          () => SizedBox(
-                            height: 30,
-                            child: CupertinoSlider(
-                              value: controller.progress.value,
-                              onChangeStart: (value) {
-                                controller.onSliderChangeStart(value);
-                              },
-                              onChanged: (value) {
-                                controller.onSliderChanged(value);
-                              },
-                              onChangeEnd: (value) {
-                                controller.onSliderChangeEnd(value);
-                              },
-                              activeColor: CupertinoColors.activeBlue,
-                              thumbColor: CupertinoColors.white,
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -187,7 +173,7 @@ class PlayerView extends StatelessWidget {
                         color: CupertinoColors.black,
                       ),
                       onPressed: () {
-                        // TODO: Implement previous
+                        controller.playPrevious();
                       },
                     ),
                     CupertinoButton(
@@ -235,7 +221,7 @@ class PlayerView extends StatelessWidget {
                         color: CupertinoColors.black,
                       ),
                       onPressed: () {
-                        // TODO: Implement next
+                        controller.playNext();
                       },
                     ),
                   ],
