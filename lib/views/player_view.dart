@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import '../models/download_item.dart';
 import '../controllers/player_controller.dart';
+import '../theme/app_colors.dart';
 
 class PlayerView extends StatelessWidget {
   final DownloadItem item;
@@ -14,11 +15,16 @@ class PlayerView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Now Playing'),
+        backgroundColor: AppColors.background,
+        middle: Text(
+          'Now Playing',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: const Text('Done'),
+          child: Text('Done', style: TextStyle(color: AppColors.primary)),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -36,7 +42,7 @@ class PlayerView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: CupertinoColors.systemGrey.withOpacity(0.2),
+                        color: AppColors.primary.withOpacity(0.15),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -52,12 +58,12 @@ class PlayerView extends StatelessWidget {
                                 fit: BoxFit.cover,
                               )
                               : Container(
-                                color: CupertinoColors.systemGrey5,
-                                child: const Center(
+                                color: AppColors.cardBackground,
+                                child: Center(
                                   child: Icon(
                                     CupertinoIcons.music_note_2,
                                     size: 50,
-                                    color: CupertinoColors.systemGrey2,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -74,9 +80,10 @@ class PlayerView extends StatelessWidget {
                     Obx(
                       () => Text(
                         controller.currentItem.value?.name ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -90,9 +97,9 @@ class PlayerView extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               videoTitle,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
-                                color: CupertinoColors.systemGrey,
+                                color: AppColors.textSecondary,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -110,9 +117,9 @@ class PlayerView extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               videoAuthor,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 16,
-                                color: CupertinoColors.systemGrey2,
+                                color: AppColors.textSecondary.withOpacity(0.8),
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -130,7 +137,6 @@ class PlayerView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    // Time labels
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Obx(
@@ -139,16 +145,16 @@ class PlayerView extends StatelessWidget {
                           children: [
                             Text(
                               controller.currentTime.value,
-                              style: const TextStyle(
-                                color: CupertinoColors.systemGrey2,
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             Text(
                               controller.totalTime.value,
-                              style: const TextStyle(
-                                color: CupertinoColors.systemGrey2,
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -172,6 +178,8 @@ class PlayerView extends StatelessWidget {
                           onChangeEnd: (value) {
                             controller.onSliderChangeEnd(value);
                           },
+                          activeColor: AppColors.sliderActive,
+                          thumbColor: AppColors.cardBackground,
                         ),
                       ),
                     ),
@@ -180,88 +188,83 @@ class PlayerView extends StatelessWidget {
               ),
               const SizedBox(height: 30),
               // Media Controls
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.05,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    CupertinoButton(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(8),
+                    child: Obx(
+                      () => Icon(
+                        CupertinoIcons.backward_fill,
+                        size: 28,
+                        color:
+                            controller.hasPrevious
+                                ? AppColors.textPrimary
+                                : AppColors.disabled,
+                      ),
+                    ),
+                    onPressed: () {
+                      if (controller.hasPrevious) {
+                        controller.playPrevious();
+                      }
+                    },
+                  ),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      CupertinoIcons.gobackward,
+                      size: 24,
+                      color: AppColors.textPrimary,
+                    ),
+                    onPressed: () {
+                      controller.skipBackward();
+                    },
+                  ),
+                  Obx(
+                    () => CupertinoButton(
                       padding: const EdgeInsets.all(8),
-                      child: Obx(
-                        () => Icon(
-                          CupertinoIcons.backward_fill,
-                          size: 28,
-                          color:
-                              controller.hasPrevious
-                                  ? CupertinoColors.black
-                                  : CupertinoColors.systemGrey4,
-                        ),
+                      child: Icon(
+                        controller.isPlaying.value
+                            ? CupertinoIcons.pause_circle_fill
+                            : CupertinoIcons.play_circle_fill,
+                        size: 44,
+                        color: AppColors.primary,
                       ),
                       onPressed: () {
-                        if (controller.hasPrevious) {
-                          controller.playPrevious();
-                        }
+                        controller.togglePlayPause();
                       },
                     ),
-                    CupertinoButton(
-                      padding: const EdgeInsets.all(8),
-                      child: const Icon(
-                        CupertinoIcons.gobackward,
-                        size: 24,
-                        color: CupertinoColors.black,
-                      ),
-                      onPressed: () {
-                        controller.skipBackward();
-                      },
+                  ),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      CupertinoIcons.goforward,
+                      size: 24,
+                      color: AppColors.textPrimary,
                     ),
-                    Obx(
-                      () => CupertinoButton(
-                        padding: const EdgeInsets.all(8),
-                        child: Icon(
-                          controller.isPlaying.value
-                              ? CupertinoIcons.pause_circle_fill
-                              : CupertinoIcons.play_circle_fill,
-                          size: 44,
-                          color: CupertinoColors.activeBlue,
-                        ),
-                        onPressed: () {
-                          controller.togglePlayPause();
-                        },
+                    onPressed: () {
+                      controller.skipForward();
+                    },
+                  ),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(8),
+                    child: Obx(
+                      () => Icon(
+                        CupertinoIcons.forward_fill,
+                        size: 28,
+                        color:
+                            controller.hasNext
+                                ? AppColors.textPrimary
+                                : AppColors.disabled,
                       ),
                     ),
-                    CupertinoButton(
-                      padding: const EdgeInsets.all(8),
-                      child: const Icon(
-                        CupertinoIcons.goforward,
-                        size: 24,
-                        color: CupertinoColors.black,
-                      ),
-                      onPressed: () {
-                        controller.skipForward();
-                      },
-                    ),
-                    CupertinoButton(
-                      padding: const EdgeInsets.all(8),
-                      child: Obx(
-                        () => Icon(
-                          CupertinoIcons.forward_fill,
-                          size: 28,
-                          color:
-                              controller.hasNext
-                                  ? CupertinoColors.black
-                                  : CupertinoColors.systemGrey4,
-                        ),
-                      ),
-                      onPressed: () {
-                        if (controller.hasNext) {
-                          controller.playNext();
-                        }
-                      },
-                    ),
-                  ],
-                ),
+                    onPressed: () {
+                      if (controller.hasNext) {
+                        controller.playNext();
+                      }
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 30),
               // Captions Section
@@ -270,28 +273,30 @@ class PlayerView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Captions',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Container(
                       height: 150,
                       decoration: BoxDecoration(
-                        color: CupertinoColors.systemGrey6,
+                        color: AppColors.cardBackground,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.disabled, width: 1),
                       ),
                       child: Obx(
                         () =>
                             controller.captions.isEmpty
-                                ? const Center(
+                                ? Center(
                                   child: Text(
                                     'No captions available',
                                     style: TextStyle(
-                                      color: CupertinoColors.systemGrey,
+                                      color: AppColors.textSecondary,
                                     ),
                                   ),
                                 )
@@ -313,8 +318,8 @@ class PlayerView extends StatelessWidget {
                                                             .currentCaption
                                                             .value ==
                                                         caption.text
-                                                    ? CupertinoColors.activeBlue
-                                                    : CupertinoColors.black,
+                                                    ? AppColors.captionHighlight
+                                                    : AppColors.captionNormal,
                                           ),
                                         ),
                                       ),

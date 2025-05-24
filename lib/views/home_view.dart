@@ -3,6 +3,7 @@ import 'package:flutter/material.dart' show ReorderableListView;
 import 'package:get/get.dart';
 import '../controllers/form_controller.dart';
 import '../widgets/download_item_card.dart';
+import '../theme/app_colors.dart';
 import 'add_modal_view.dart';
 
 class HomeView extends GetView<FormController> {
@@ -11,11 +12,13 @@ class HomeView extends GetView<FormController> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Home'),
+        backgroundColor: AppColors.background,
+        middle: Text('Home', style: TextStyle(color: AppColors.textPrimary)),
         trailing: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: const Icon(CupertinoIcons.add),
+          child: Icon(CupertinoIcons.add, color: AppColors.primary),
           onPressed: () => _showAddModal(),
         ),
       ),
@@ -23,8 +26,14 @@ class HomeView extends GetView<FormController> {
         child: Obx(
           () =>
               controller.items.isEmpty
-                  ? const Center(
-                    child: Text('No items yet', style: TextStyle(fontSize: 24)),
+                  ? Center(
+                    child: Text(
+                      'No items yet',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   )
                   : ReorderableListView.builder(
                     padding: const EdgeInsets.only(top: 8),
