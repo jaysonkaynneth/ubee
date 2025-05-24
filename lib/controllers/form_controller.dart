@@ -26,7 +26,6 @@ class FormController extends GetxController {
     super.onClose();
   }
 
-  // Helper method to sanitize filename
   String _sanitizeFileName(String name) {
     return name
         .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
@@ -55,14 +54,12 @@ class FormController extends GetxController {
       final List<DownloadItem> allItems = [];
       Map<String, dynamic> metadata = {};
 
-      // Print all files in directory
       print('\nFiles in ${dir.path}:');
       dir.listSync().forEach((entity) {
         print('  ${entity.path.split('/').last}');
       });
       print('');
 
-      // Load metadata if exists
       final metadataFile = File(await _metadataFilePath);
       if (await metadataFile.exists()) {
         final jsonString = await metadataFile.readAsString();
@@ -73,7 +70,6 @@ class FormController extends GetxController {
         };
       }
 
-      // Scan directory for all audio files
       final audioFiles = dir.listSync().where((entity) {
         if (entity is File) {
           final extension = entity.path.split('.').last.toLowerCase();
@@ -82,28 +78,24 @@ class FormController extends GetxController {
         return false;
       });
 
-      // Create items for each audio file
       for (var file in audioFiles) {
         final fileName = file.path.split('/').last;
         final nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
 
-        // Check if we have metadata for this file
         if (metadata.containsKey(nameWithoutExt)) {
           allItems.add(metadata[nameWithoutExt]!);
         } else {
-          // Create basic item for files without metadata
           allItems.add(
             DownloadItem(
               name: nameWithoutExt,
-              youtubeLink: '', // Empty since we don't know the source
+              youtubeLink: '',
               isDownloading: false,
-              downloadProgress: 1.0, // Mark as complete since file exists
+              downloadProgress: 1.0,
             ),
           );
         }
       }
 
-      // Load items in the saved order
       await loadItemsInSavedOrder(allItems);
     } catch (e) {
       print('Error loading existing downloads: $e');
@@ -158,7 +150,6 @@ class FormController extends GetxController {
 
       final dir = await getApplicationDocumentsDirectory();
       final fileName = _sanitizeFileName(customName);
-      // First save as webm
       final webmPath = '${dir.path}/$fileName.webm';
       final mp3Path = '${dir.path}/$fileName.mp3';
       print('Saving temporary webm to: $webmPath');
@@ -173,8 +164,7 @@ class FormController extends GetxController {
       try {
         await for (final data in stream) {
           count += data.length;
-          final progress =
-              (count / len * 0.5) * 2; // Multiply by 2 to show full range
+          final progress = (count / len * 0.5) * 2;
 
           if (itemIndex < items.length) {
             final currentItem = items[itemIndex];
@@ -192,14 +182,13 @@ class FormController extends GetxController {
         await fileStream.flush();
         await fileStream.close();
 
-        // Convert webm to mp3 using FFmpeg
         print('Converting webm to mp3...');
         if (itemIndex < items.length) {
           final currentItem = items[itemIndex];
           items[itemIndex] = currentItem.copyWith(
-            downloadProgress: 1.0, // Set to 1.0 to indicate conversion phase
+            downloadProgress: 1.0,
             isDownloading: true,
-            isConverting: true, // Add this field to DownloadItem model
+            isConverting: true,
           );
         }
 
@@ -210,7 +199,6 @@ class FormController extends GetxController {
         final returnCode = await session.getReturnCode();
 
         if (ReturnCode.isSuccess(returnCode)) {
-          // Delete the temporary webm file
           if (await file.exists()) {
             await file.delete();
           }
@@ -236,7 +224,6 @@ class FormController extends GetxController {
         print('Error during download or conversion: $e');
         print('Stack trace: $stackTrace');
         await fileStream.close();
-        // Clean up both webm and mp3 files if they exist
         if (await file.exists()) {
           await file.delete();
         }
@@ -272,7 +259,6 @@ class FormController extends GetxController {
       final dir = await getApplicationDocumentsDirectory();
       final fileName = _sanitizeFileName(item.name);
 
-      // Try to delete both .mp3 and .webm versions if they exist
       final mp3File = File('${dir.path}/$fileName.mp3');
       final webmFile = File('${dir.path}/$fileName.webm');
 
@@ -296,7 +282,6 @@ class FormController extends GetxController {
     }
   }
 
-  // Save the current queue order
   Future<void> saveQueueOrder() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -307,7 +292,6 @@ class FormController extends GetxController {
     }
   }
 
-  // Reorder items in the list
   void reorderItems(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) {
       newIndex -= 1;
@@ -317,17 +301,14 @@ class FormController extends GetxController {
     saveQueueOrder();
   }
 
-  // Load items in the saved order
   Future<void> loadItemsInSavedOrder(List<DownloadItem> loadedItems) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedOrder = prefs.getStringList(_queueOrderKey);
 
       if (savedOrder != null) {
-        // Create a map of names to items for quick lookup
         final itemMap = {for (var item in loadedItems) item.name: item};
 
-        // First add items in the saved order
         final orderedItems = <DownloadItem>[];
         for (var name in savedOrder) {
           if (itemMap.containsKey(name)) {
@@ -336,7 +317,6 @@ class FormController extends GetxController {
           }
         }
 
-        // Add any remaining items that weren't in the saved order
         orderedItems.addAll(itemMap.values);
 
         items.value = orderedItems;

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart' show LinearProgressIndicator;
 import 'package:get/get.dart';
 import '../models/download_item.dart';
 import '../controllers/form_controller.dart';
-import '../controllers/player_controller.dart';
 import '../views/player_view.dart';
 import '../theme/app_colors.dart';
 
@@ -40,7 +39,6 @@ class DownloadItemCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Thumbnail with duration
                 Stack(
                   children: [
                     ClipRRect(
@@ -92,7 +90,6 @@ class DownloadItemCard extends StatelessWidget {
                       ),
                   ],
                 ),
-                // Video details
                 Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -133,7 +130,6 @@ class DownloadItemCard extends StatelessWidget {
                 ),
               ],
             ),
-            // Delete button
             Positioned(
               top: 8,
               right: 8,

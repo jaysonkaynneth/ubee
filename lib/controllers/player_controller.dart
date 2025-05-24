@@ -95,37 +95,30 @@ class PlayerController extends GetxController {
           .replaceAll(RegExp(r'\s+'), '_');
       final filePath = '${dir.path}/$fileName.mp3';
 
-      // Stop current playback if any
       await _player.stop();
 
-      // Load captions
       await loadCaptions(item.youtubeLink);
 
-      // Load and play the new audio file
       await _player.setFilePath(filePath);
       _player.play();
       isPlaying.value = true;
 
-      // Update duration
       _player.durationStream.listen((duration) {
         if (duration != null) {
           totalTime.value = _formatDuration(duration);
         }
       });
 
-      // Update position and captions
       _player.positionStream.listen((position) {
         if (!isDraggingSlider.value) {
           currentTime.value = _formatDuration(position);
           if (_player.duration != null) {
             final newProgress =
                 position.inMilliseconds / _player.duration!.inMilliseconds;
-            // Check if we've reached the end
             if (newProgress >= 1.0) {
               progress.value = 1.0;
               _player.pause();
               isPlaying.value = false;
-              // Auto-play next track when current one ends
               playNext();
             } else {
               progress.value = newProgress;
@@ -135,7 +128,6 @@ class PlayerController extends GetxController {
         }
       });
 
-      // Update playing state
       _player.playingStream.listen((playing) {
         isPlaying.value = playing;
       });
@@ -146,7 +138,6 @@ class PlayerController extends GetxController {
 
   Future<void> togglePlayPause() async {
     if (progress.value >= 1.0) {
-      // If at the end, don't start playing
       return;
     }
 
@@ -186,7 +177,6 @@ class PlayerController extends GetxController {
       );
       await _player.seek(position);
 
-      // Only resume playing if we weren't at the end and were playing before
       if (value < 1.0 && wasPlayingBeforeDrag) {
         await _player.play();
         isPlaying.value = true;
@@ -197,7 +187,6 @@ class PlayerController extends GetxController {
   Future<void> skipForward() async {
     if (_player.duration == null) return;
     final newPosition = _player.position + const Duration(seconds: 5);
-    // Ensure we don't skip past the end
     if (newPosition <= _player.duration!) {
       await _player.seek(newPosition);
     } else {
@@ -207,7 +196,6 @@ class PlayerController extends GetxController {
 
   Future<void> skipBackward() async {
     final newPosition = _player.position - const Duration(seconds: 5);
-    // Ensure we don't go below 0
     if (newPosition.isNegative) {
       await _player.seek(Duration.zero);
     } else {

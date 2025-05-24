@@ -33,7 +33,6 @@ class PlayerView extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              // Thumbnail
               AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Container(
@@ -72,7 +71,6 @@ class PlayerView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
-              // Track Info
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -132,7 +130,6 @@ class PlayerView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
-              // Progress Slider
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -187,7 +184,6 @@ class PlayerView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 30),
-              // Media Controls
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -267,7 +263,6 @@ class PlayerView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 30),
-              // Captions Section
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
