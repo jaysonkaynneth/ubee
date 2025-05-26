@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../models/download_item.dart';
 import '../controllers/form_controller.dart';
+import 'package:flutter/widgets.dart';
 
 class PlayerController extends GetxController {
   final _player = AudioPlayer();
@@ -18,6 +19,7 @@ class PlayerController extends GetxController {
   final RxString currentCaption = ''.obs;
   final RxBool isDraggingSlider = false.obs;
   bool wasPlayingBeforeDrag = false;
+  final ScrollController captionsScrollController = ScrollController();
 
   int get currentIndex {
     if (currentItem.value == null) return -1;
@@ -45,6 +47,7 @@ class PlayerController extends GetxController {
   void onClose() {
     _player.dispose();
     _yt.close();
+    captionsScrollController.dispose();
     super.onClose();
   }
 
@@ -79,11 +82,29 @@ class PlayerController extends GetxController {
   void updateCurrentCaption(Duration position) {
     if (captions.isEmpty) return;
 
-    final caption = captions.firstWhereOrNull(
+    final captionIndex = captions.indexWhere(
       (c) => c.offset <= position && position <= (c.offset + c.duration),
     );
 
-    currentCaption.value = caption?.text ?? '';
+    if (captionIndex != -1) {
+      final caption = captions[captionIndex];
+      currentCaption.value = caption.text;
+
+      // Auto scroll to the current caption
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (captionsScrollController.hasClients) {
+          final itemHeight = 30.0; // Approximate height of each caption item
+          final scrollPosition = captionIndex * itemHeight;
+          captionsScrollController.animateTo(
+            scrollPosition,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    } else {
+      currentCaption.value = '';
+    }
   }
 
   Future<void> loadAndPlay(DownloadItem item) async {

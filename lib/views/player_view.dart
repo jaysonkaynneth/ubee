@@ -296,6 +296,8 @@ class PlayerView extends StatelessWidget {
                                   ),
                                 )
                                 : ListView.builder(
+                                  controller:
+                                      controller.captionsScrollController,
                                   padding: const EdgeInsets.all(12),
                                   itemCount: controller.captions.length,
                                   itemBuilder: (context, index) {
