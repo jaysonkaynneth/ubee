@@ -268,13 +268,33 @@ class PlayerView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Captions',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Captions',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          child: Icon(
+                            CupertinoIcons.refresh,
+                            color: AppColors.textPrimary,
+                          ),
+                          onPressed: () {
+                            if (controller.currentItem.value?.youtubeLink !=
+                                null) {
+                              controller.loadCaptions(
+                                controller.currentItem.value!.youtubeLink,
+                              );
+                            }
+                          },
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
                     Container(

@@ -82,8 +82,12 @@ class PlayerController extends GetxController {
   void updateCurrentCaption(Duration position) {
     if (captions.isEmpty) return;
 
+    final adjustedPosition = position + const Duration(seconds: 2);
+
     final captionIndex = captions.indexWhere(
-      (c) => c.offset <= position && position <= (c.offset + c.duration),
+      (c) =>
+          c.offset <= adjustedPosition &&
+          adjustedPosition <= (c.offset + c.duration),
     );
 
     if (captionIndex != -1) {
