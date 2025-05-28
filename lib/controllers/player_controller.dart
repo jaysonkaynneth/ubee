@@ -51,7 +51,7 @@ class PlayerController extends GetxController {
     super.onClose();
   }
 
-  String _formatDuration(Duration duration) {
+  String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
@@ -130,13 +130,13 @@ class PlayerController extends GetxController {
 
       _player.durationStream.listen((duration) {
         if (duration != null) {
-          totalTime.value = _formatDuration(duration);
+          totalTime.value = formatDuration(duration);
         }
       });
 
       _player.positionStream.listen((position) {
         if (!isDraggingSlider.value) {
-          currentTime.value = _formatDuration(position);
+          currentTime.value = formatDuration(position);
           if (_player.duration != null) {
             final newProgress =
                 position.inMilliseconds / _player.duration!.inMilliseconds;
@@ -185,7 +185,7 @@ class PlayerController extends GetxController {
 
   void onSliderChanged(double value) {
     if (_player.duration != null) {
-      currentTime.value = _formatDuration(
+      currentTime.value = formatDuration(
         Duration(
           milliseconds: (value * _player.duration!.inMilliseconds).round(),
         ),

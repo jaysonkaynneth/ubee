@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart' show Divider;
 import '../models/download_item.dart';
 import '../controllers/player_controller.dart';
 import '../theme/app_colors.dart';
@@ -298,7 +299,7 @@ class PlayerView extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Container(
-                      height: 150,
+                      height: 300,
                       decoration: BoxDecoration(
                         color: AppColors.cardBackground,
                         borderRadius: BorderRadius.circular(12),
@@ -315,30 +316,55 @@ class PlayerView extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                                : ListView.builder(
+                                : ListView.separated(
                                   controller:
                                       controller.captionsScrollController,
                                   padding: const EdgeInsets.all(12),
                                   itemCount: controller.captions.length,
+                                  separatorBuilder:
+                                      (context, index) => const Divider(
+                                        height: 16,
+                                        thickness: 0.5,
+                                      ),
                                   itemBuilder: (context, index) {
                                     final caption = controller.captions[index];
+                                    final timestamp =
+                                        '${controller.formatDuration(caption.offset)} → ${controller.formatDuration(caption.offset + caption.duration)}';
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 4,
                                       ),
-                                      child: Obx(
-                                        () => Text(
-                                          caption.text,
-                                          style: TextStyle(
-                                            color:
-                                                controller
-                                                            .currentCaption
-                                                            .value ==
-                                                        caption.text
-                                                    ? AppColors.captionHighlight
-                                                    : AppColors.captionNormal,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            timestamp,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.textSecondary
+                                                  .withOpacity(0.7),
+                                            ),
                                           ),
-                                        ),
+                                          const SizedBox(height: 4),
+                                          Obx(
+                                            () => Text(
+                                              caption.text,
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                color:
+                                                    controller
+                                                                .currentCaption
+                                                                .value ==
+                                                            caption.text
+                                                        ? AppColors
+                                                            .captionHighlight
+                                                        : AppColors
+                                                            .captionNormal,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     );
                                   },
