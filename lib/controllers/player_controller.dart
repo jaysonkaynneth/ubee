@@ -20,6 +20,7 @@ class PlayerController extends GetxController {
   final RxBool isDraggingSlider = false.obs;
   bool wasPlayingBeforeDrag = false;
   final ScrollController captionsScrollController = ScrollController();
+  final RxBool isLoading = false.obs;
 
   int get currentIndex {
     if (currentItem.value == null) return -1;
@@ -118,6 +119,7 @@ class PlayerController extends GetxController {
 
   Future<void> loadAndPlay(DownloadItem item) async {
     try {
+      isLoading.value = true;
       currentItem.value = item;
       final dir = await getApplicationDocumentsDirectory();
       final fileName = item.name
@@ -160,9 +162,13 @@ class PlayerController extends GetxController {
 
       _player.playingStream.listen((playing) {
         isPlaying.value = playing;
+        if (playing && isLoading.value) {
+          isLoading.value = false;
+        }
       });
     } catch (e) {
       print('Error playing audio: $e');
+      isLoading.value = false;
     }
   }
 
