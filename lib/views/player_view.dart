@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:flutter/material.dart' show Divider;
 import '../models/download_item.dart';
 import '../controllers/player_controller.dart';
 import '../theme/app_colors.dart';
@@ -280,26 +280,41 @@ class PlayerView extends StatelessWidget {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          child: Icon(
-                            CupertinoIcons.refresh,
-                            color: AppColors.textPrimary,
-                          ),
-                          onPressed: () {
-                            if (controller.currentItem.value?.youtubeLink !=
-                                null) {
-                              controller.loadCaptions(
-                                controller.currentItem.value!.youtubeLink,
-                              );
-                            }
-                          },
+                        Row(
+                          children: [
+                            CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              child: Icon(
+                                CupertinoIcons.location_fill,
+                                color: AppColors.textPrimary,
+                              ),
+                              onPressed: () {
+                                controller.scrollToCurrentCaption();
+                              },
+                            ),
+                            const SizedBox(width: 8),
+                            CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              child: Icon(
+                                CupertinoIcons.refresh,
+                                color: AppColors.textPrimary,
+                              ),
+                              onPressed: () {
+                                if (controller.currentItem.value?.youtubeLink !=
+                                    null) {
+                                  controller.loadCaptions(
+                                    controller.currentItem.value!.youtubeLink,
+                                  );
+                                }
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
                     Container(
-                      height: 300,
+                      height: 250,
                       decoration: BoxDecoration(
                         color: AppColors.cardBackground,
                         borderRadius: BorderRadius.circular(12),
@@ -316,55 +331,75 @@ class PlayerView extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                                : ListView.separated(
+                                : ListView.builder(
                                   controller:
                                       controller.captionsScrollController,
                                   padding: const EdgeInsets.all(12),
                                   itemCount: controller.captions.length,
-                                  separatorBuilder:
-                                      (context, index) => const Divider(
-                                        height: 16,
-                                        thickness: 0.5,
-                                      ),
                                   itemBuilder: (context, index) {
                                     final caption = controller.captions[index];
-                                    final timestamp =
-                                        '${controller.formatDuration(caption.offset)} → ${controller.formatDuration(caption.offset + caption.duration)}';
+                                    final startTime = _formatCaptionTime(
+                                      caption.offset.inSeconds.toDouble(),
+                                    );
+                                    final endTime = _formatCaptionTime(
+                                      (caption.offset + caption.duration)
+                                          .inSeconds
+                                          .toDouble(),
+                                    );
+
                                     return Padding(
                                       padding: const EdgeInsets.symmetric(
-                                        vertical: 4,
+                                        vertical: 8,
                                       ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            timestamp,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.textSecondary
-                                                  .withOpacity(0.7),
+                                      child: Obx(
+                                        () => Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                controller
+                                                            .currentCaption
+                                                            .value ==
+                                                        caption.text
+                                                    ? AppColors.captionHighlight
+                                                        .withOpacity(0.1)
+                                                    : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
                                             ),
                                           ),
-                                          const SizedBox(height: 4),
-                                          Obx(
-                                            () => Text(
-                                              caption.text,
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                color:
-                                                    controller
-                                                                .currentCaption
-                                                                .value ==
-                                                            caption.text
-                                                        ? AppColors
-                                                            .captionHighlight
-                                                        : AppColors
-                                                            .captionNormal,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '$startTime - $endTime',
+                                                style: TextStyle(
+                                                  color: AppColors.textSecondary
+                                                      .withOpacity(0.7),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
-                                            ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                caption.text,
+                                                style: TextStyle(
+                                                  color:
+                                                      controller
+                                                                  .currentCaption
+                                                                  .value ==
+                                                              caption.text
+                                                          ? AppColors
+                                                              .captionHighlight
+                                                          : AppColors
+                                                              .captionNormal,
+                                                  fontSize: 14,
+                                                  height: 1.3,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     );
                                   },
@@ -380,5 +415,11 @@ class PlayerView extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatCaptionTime(double seconds) {
+    final minutes = (seconds / 60).floor();
+    final remainingSeconds = (seconds % 60).floor();
+    return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 }

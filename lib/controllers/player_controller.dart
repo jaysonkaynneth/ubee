@@ -51,7 +51,7 @@ class PlayerController extends GetxController {
     super.onClose();
   }
 
-  String formatDuration(Duration duration) {
+  String _formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
@@ -93,21 +93,26 @@ class PlayerController extends GetxController {
     if (captionIndex != -1) {
       final caption = captions[captionIndex];
       currentCaption.value = caption.text;
-
-      // Auto scroll to the current caption
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (captionsScrollController.hasClients) {
-          final itemHeight = 30.0; // Approximate height of each caption item
-          final scrollPosition = captionIndex * itemHeight;
-          captionsScrollController.animateTo(
-            scrollPosition,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        }
-      });
     } else {
       currentCaption.value = '';
+    }
+  }
+
+  void scrollToCurrentCaption() {
+    if (captions.isEmpty || currentCaption.value.isEmpty) return;
+
+    final captionIndex = captions.indexWhere(
+      (caption) => caption.text == currentCaption.value,
+    );
+
+    if (captionIndex != -1 && captionsScrollController.hasClients) {
+      final itemHeight = 80.0;
+      final scrollPosition = captionIndex * itemHeight;
+      captionsScrollController.animateTo(
+        scrollPosition,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -130,13 +135,13 @@ class PlayerController extends GetxController {
 
       _player.durationStream.listen((duration) {
         if (duration != null) {
-          totalTime.value = formatDuration(duration);
+          totalTime.value = _formatDuration(duration);
         }
       });
 
       _player.positionStream.listen((position) {
         if (!isDraggingSlider.value) {
-          currentTime.value = formatDuration(position);
+          currentTime.value = _formatDuration(position);
           if (_player.duration != null) {
             final newProgress =
                 position.inMilliseconds / _player.duration!.inMilliseconds;
@@ -185,7 +190,7 @@ class PlayerController extends GetxController {
 
   void onSliderChanged(double value) {
     if (_player.duration != null) {
-      currentTime.value = formatDuration(
+      currentTime.value = _formatDuration(
         Duration(
           milliseconds: (value * _player.duration!.inMilliseconds).round(),
         ),
