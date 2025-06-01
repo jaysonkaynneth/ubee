@@ -81,7 +81,7 @@ class DownloadItemCard extends StatelessWidget {
                           child: Text(
                             item.duration!,
                             style: TextStyle(
-                              color: AppColors.accent,
+                              color: CupertinoColors.black,
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -144,7 +144,7 @@ class DownloadItemCard extends StatelessWidget {
                   child: Icon(
                     CupertinoIcons.delete,
                     size: 16,
-                    color: AppColors.accent,
+                    color: CupertinoColors.black,
                   ),
                 ),
                 onPressed: () {

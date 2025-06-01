@@ -11,44 +11,47 @@ class HomeView extends GetView<FormController> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      backgroundColor: AppColors.background,
-      navigationBar: CupertinoNavigationBar(
+    return Obx(
+      () => CupertinoPageScaffold(
         backgroundColor: AppColors.background,
-        middle: Text('Home', style: TextStyle(color: AppColors.textPrimary)),
-        trailing: CupertinoButton(
-          padding: EdgeInsets.zero,
-          child: Icon(CupertinoIcons.add, color: AppColors.primary),
-          onPressed: () => _showAddModal(),
+        navigationBar: CupertinoNavigationBar(
+          backgroundColor: AppColors.background,
+          middle: Text('Home', style: TextStyle(color: AppColors.textPrimary)),
+          trailing: CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Icon(CupertinoIcons.add, color: AppColors.primary),
+            onPressed: () => _showAddModal(),
+          ),
+          border: null,
         ),
-      ),
-      child: SafeArea(
-        child: Obx(
-          () =>
-              controller.items.isEmpty
-                  ? Center(
-                    child: Text(
-                      'No items yet',
-                      style: TextStyle(
-                        fontSize: 24,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  )
-                  : ReorderableListView.builder(
-                    padding: const EdgeInsets.only(top: 8),
-                    itemCount: controller.items.length,
-                    onReorder: controller.reorderItems,
-                    itemBuilder: (context, index) {
-                      return KeyedSubtree(
-                        key: ValueKey(controller.items[index].name),
-                        child: DownloadItemCard(
-                          item: controller.items[index],
-                          index: index,
+        child: SafeArea(
+          child: Obx(
+            () =>
+                controller.items.isEmpty
+                    ? Center(
+                      child: Text(
+                        'No items yet',
+                        style: TextStyle(
+                          fontSize: 24,
+                          color: AppColors.textSecondary,
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    )
+                    : ReorderableListView.builder(
+                      padding: const EdgeInsets.only(top: 8),
+                      itemCount: controller.items.length,
+                      onReorder: controller.reorderItems,
+                      itemBuilder: (context, index) {
+                        return KeyedSubtree(
+                          key: ValueKey(controller.items[index].name),
+                          child: DownloadItemCard(
+                            item: controller.items[index],
+                            index: index,
+                          ),
+                        );
+                      },
+                    ),
+          ),
         ),
       ),
     );
