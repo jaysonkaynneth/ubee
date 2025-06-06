@@ -4,12 +4,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../models/download_item.dart';
 import '../controllers/form_controller.dart';
+import '../services/audio_handler.dart';
 import 'package:flutter/widgets.dart';
 
 class PlayerController extends GetxController {
-  final _player = AudioPlayer();
   final _yt = YoutubeExplode();
   final formController = Get.find<FormController>();
+  late final UbeeAudioHandler _audioHandler;
+  AudioPlayer get _player => _audioHandler.player;
   final Rx<DownloadItem?> currentItem = Rx<DownloadItem?>(null);
   final RxBool isPlaying = false.obs;
   final RxDouble progress = 0.0.obs;
@@ -21,6 +23,7 @@ class PlayerController extends GetxController {
   bool wasPlayingBeforeDrag = false;
   final ScrollController captionsScrollController = ScrollController();
   final RxBool isLoading = false.obs;
+  final RxBool isLooping = false.obs;
 
   int get currentIndex {
     if (currentItem.value == null) return -1;
@@ -31,6 +34,13 @@ class PlayerController extends GetxController {
 
   bool get hasNext => currentIndex < formController.items.length - 1;
   bool get hasPrevious => currentIndex > 0;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _audioHandler = Get.find<UbeeAudioHandler>();
+    _setupPlayerListeners();
+  }
 
   Future<void> playNext() async {
     if (!hasNext) return;
@@ -48,17 +58,14 @@ class PlayerController extends GetxController {
     final currentPosition = _player.position;
 
     if (currentPosition.inSeconds < 5) {
-      // If we're within the first 5 seconds, go to previous track
       await playPrevious();
     } else {
-      // Otherwise, reset to beginning of current track
       await _player.seek(Duration.zero);
     }
   }
 
   @override
   void onClose() {
-    _player.dispose();
     _yt.close();
     captionsScrollController.dispose();
     super.onClose();
@@ -82,13 +89,13 @@ class PlayerController extends GetxController {
 
       if (trackInfo != null) {
         final track = await _yt.videos.closedCaptions.get(trackInfo);
-        captions.value = track.captions;
+        captions.value = <ClosedCaption>[...track.captions];
       } else {
-        captions.clear();
+        captions.value = <ClosedCaption>[];
       }
     } catch (e) {
       print('Error loading captions: $e');
-      captions.clear();
+      captions.value = <ClosedCaption>[];
     }
   }
 
@@ -130,6 +137,10 @@ class PlayerController extends GetxController {
   }
 
   Future<void> loadAndPlay(DownloadItem item) async {
+    if (isLoading.value) {
+      return;
+    }
+
     try {
       isLoading.value = true;
       currentItem.value = item;
@@ -143,45 +154,48 @@ class PlayerController extends GetxController {
 
       await loadCaptions(item.youtubeLink);
 
-      await _player.setFilePath(filePath);
-      _player.play();
-      isPlaying.value = true;
-
-      _player.durationStream.listen((duration) {
-        if (duration != null) {
-          totalTime.value = _formatDuration(duration);
-        }
-      });
-
-      _player.positionStream.listen((position) {
-        if (!isDraggingSlider.value) {
-          currentTime.value = _formatDuration(position);
-          if (_player.duration != null) {
-            final newProgress =
-                position.inMilliseconds / _player.duration!.inMilliseconds;
-            if (newProgress >= 1.0) {
-              progress.value = 1.0;
-              _player.pause();
-              isPlaying.value = false;
-              playNext();
-            } else {
-              progress.value = newProgress;
-            }
-          }
-          updateCurrentCaption(position);
-        }
-      });
-
-      _player.playingStream.listen((playing) {
-        isPlaying.value = playing;
-        if (playing && isLoading.value) {
-          isLoading.value = false;
-        }
-      });
+      await _audioHandler.loadItem(item, filePath);
     } catch (e) {
       print('Error playing audio: $e');
       isLoading.value = false;
     }
+  }
+
+  void _setupPlayerListeners() {
+    _player.durationStream.listen((duration) {
+      if (duration != null) {
+        totalTime.value = _formatDuration(duration);
+      }
+    });
+
+    _player.positionStream.listen((position) {
+      if (!isDraggingSlider.value) {
+        currentTime.value = _formatDuration(position);
+        if (_player.duration != null) {
+          final newProgress =
+              position.inMilliseconds / _player.duration!.inMilliseconds;
+          if (newProgress >= 1.0) {
+            progress.value = 1.0;
+            isPlaying.value = false;
+            if (isLooping.value) {
+              _handleTrackLoop();
+            } else {
+              playNext();
+            }
+          } else {
+            progress.value = newProgress;
+          }
+        }
+        updateCurrentCaption(position);
+      }
+    });
+
+    _player.playingStream.listen((playing) {
+      isPlaying.value = playing;
+      if (playing && isLoading.value) {
+        isLoading.value = false;
+      }
+    });
   }
 
   Future<void> togglePlayPause() async {
@@ -190,18 +204,17 @@ class PlayerController extends GetxController {
     }
 
     if (_player.playing) {
-      await _player.pause();
+      await _audioHandler.pause();
     } else {
-      await _player.play();
+      await _audioHandler.play();
     }
-    isPlaying.value = _player.playing;
   }
 
   void onSliderChangeStart(double value) {
     isDraggingSlider.value = true;
     wasPlayingBeforeDrag = _player.playing;
     if (wasPlayingBeforeDrag) {
-      _player.pause();
+      _audioHandler.pause();
       isPlaying.value = false;
     }
   }
@@ -223,10 +236,10 @@ class PlayerController extends GetxController {
       final position = Duration(
         milliseconds: (value * _player.duration!.inMilliseconds).round(),
       );
-      await _player.seek(position);
+      await _audioHandler.seek(position);
 
       if (value < 1.0 && wasPlayingBeforeDrag) {
-        await _player.play();
+        await _audioHandler.play();
         isPlaying.value = true;
       }
     }
@@ -236,18 +249,31 @@ class PlayerController extends GetxController {
     if (_player.duration == null) return;
     final newPosition = _player.position + const Duration(seconds: 5);
     if (newPosition <= _player.duration!) {
-      await _player.seek(newPosition);
+      await _audioHandler.seek(newPosition);
     } else {
-      await _player.seek(_player.duration!);
+      await _audioHandler.seek(_player.duration!);
     }
   }
 
   Future<void> skipBackward() async {
     final newPosition = _player.position - const Duration(seconds: 5);
     if (newPosition.isNegative) {
-      await _player.seek(Duration.zero);
+      await _audioHandler.seek(Duration.zero);
     } else {
-      await _player.seek(newPosition);
+      await _audioHandler.seek(newPosition);
     }
+  }
+
+  void toggleLoop() {
+    isLooping.value = !isLooping.value;
+    _audioHandler.setLooping(isLooping.value);
+  }
+
+  void _handleTrackLoop() {
+    Future(() async {
+      await _audioHandler.seek(Duration.zero);
+      await _audioHandler.play();
+      isPlaying.value = true;
+    });
   }
 }

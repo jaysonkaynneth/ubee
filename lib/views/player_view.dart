@@ -7,7 +7,7 @@ import '../theme/app_colors.dart';
 
 class PlayerView extends StatelessWidget {
   final DownloadItem item;
-  final PlayerController controller = Get.put(PlayerController());
+  final PlayerController controller = Get.find<PlayerController>();
 
   PlayerView({Key? key, required this.item}) : super(key: key) {
     controller.loadAndPlay(item);
@@ -25,8 +25,21 @@ class PlayerView extends StatelessWidget {
         ),
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
-          child: Text('Done', style: TextStyle(color: AppColors.primary)),
+          child: Text('Back', style: TextStyle(color: AppColors.primary)),
           onPressed: () => Navigator.of(context).pop(),
+        ),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          child: Obx(
+            () => Icon(
+              CupertinoIcons.repeat,
+              color:
+                  controller.isLooping.value
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
+            ),
+          ),
+          onPressed: () => controller.toggleLoop(),
         ),
       ),
       child: SafeArea(
@@ -424,7 +437,6 @@ class PlayerView extends StatelessWidget {
                 ],
               ),
             ),
-            // Loading overlay
             Obx(
               () =>
                   controller.isLoading.value
