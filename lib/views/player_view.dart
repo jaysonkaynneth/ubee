@@ -198,16 +198,11 @@ class PlayerView extends StatelessWidget {
                           () => Icon(
                             CupertinoIcons.backward_fill,
                             size: 28,
-                            color:
-                                controller.hasPrevious
-                                    ? AppColors.textPrimary
-                                    : AppColors.disabled,
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         onPressed: () {
-                          if (controller.hasPrevious) {
-                            controller.playPrevious();
-                          }
+                          controller.handleBackwardPress();
                         },
                       ),
                       CupertinoButton(

@@ -44,6 +44,18 @@ class PlayerController extends GetxController {
     await loadAndPlay(previousItem);
   }
 
+  Future<void> handleBackwardPress() async {
+    final currentPosition = _player.position;
+
+    if (currentPosition.inSeconds < 5) {
+      // If we're within the first 5 seconds, go to previous track
+      await playPrevious();
+    } else {
+      // Otherwise, reset to beginning of current track
+      await _player.seek(Duration.zero);
+    }
+  }
+
   @override
   void onClose() {
     _player.dispose();
